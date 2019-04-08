@@ -1,20 +1,19 @@
 import logging, sys
 import config as cf
+import numpy as np
 
 from python.network.network import *
 from python.network.cluster import *
 from python.routing.routing_protocol import *
 
 # Stores the details of the current clusters
-# We want to be able to reus the previous clusters as opposed to LEACH
+# We want to be able to reuse the previous clusters as opposed to LEACH
 # which create new clusters on each round
 clusters = []
+# The number of clusters in the network is determined by the algorithm
+# TODO Add Reference
+NB_CLUSTERS = 5
 
-# TODO
-# Get average Cluster Energy
-# Check for alive nodes with energy >= aveEnergy
-# Get Highest energy level nodes
-# Apply  MODIFIED_LEACH Algorithm on remaining nodes
 class MODIFIED_LEACH(RoutingProtocol):
 
   def _setup_phase_cluster(self, network, round_nb=None, cluster=None):
@@ -39,6 +38,11 @@ class MODIFIED_LEACH(RoutingProtocol):
         self._setup_phase_base_station(network, round_nb)
         break
       cluster.select_new_CH()
+  
+  def _make_CH(self, node):
+    """ Make a node a Cluster Head """
+    node.next_hop = cf.BSID
+    clusters.append(Cluster(cluster_id, node))
 
   def _setup_phase_base_station(self, network, round_nb=None):
     """The base station decides which nodes are cluster heads in the first round
@@ -48,36 +52,48 @@ class MODIFIED_LEACH(RoutingProtocol):
 
     TODO: Add Reference to Paper
     """
+    # TODO Refactor to remove code redundance
     logging.info('MODIFIED_LEACH: setup phase by base Station.')
-    # decide which network are cluster heads
-    prob_ch = float(cf.NB_CLUSTERS)/float(cf.NB_NODES)
-    heads = []
-
-    # When the base station selects clusters, the previous clusters are destroyed
-    # and new ones created
-    global clusters
-    clusters = []
     alive_nodes = network.get_alive_nodes()
-    logging.info('MODIFIED_LEACH: deciding which nodes are cluster heads.')
-    idx = 0
-    cluster_id = 0
-    while len(heads) != cf.NB_CLUSTERS:
-      node = alive_nodes[idx]
-      u_random = np.random.uniform(0, 1)
-      # node will be a cluster head
-      if u_random < prob_ch:
-        node.next_hop = cf.BSID
-        heads.append(node) 
-        # Store Cluster information
-        clusters.append(Cluster(cluster_id, node))
+    # An optimal algorithm for finding number of clusters
+    # TODO Add Reference
+    global NB_CLUSTERS
+    NB_CLUSTERS = np.round(np.sqrt(0.5 * len(alive_nodes) * (cf.THRESHOLD_DIST/np.pi) * \
+              (cf.AREA_LENGTH/cf.CLUSTER_BASE_DIST**2)))
+    global clusters
+    if round_nb == 0 and len(clusters):
+      # for first round, all nodes have the same energy levels (HOMOGEANOUS)
+      # Cluster heads are determined by distance from the Base Station
+      prob_ch = float(NB_CLUSTERS)/float(cf.NB_NODES)
+      # Sort nodes by distance form BS
+      sort_fn = lambda x: calculate_distance(x, network.base_station)
+      sorted_nodes = sorted(alive_nodes, key=sort_fn)
+      heads = []
+      # When the base station selects clusters, the previous clusters are destroyed
+      # and new ones created
+      clusters = []
+      logging.info('MODIFIED_LEACH: deciding which nodes are cluster heads.')
+      idx = 0
+      cluster_id = 0
+      while len(heads) != NB_CLUSTERS:
+        node = sorted_nodes[idx]
+        # node will be a cluster head
+        self._make_CH(node)
+        heads.append(node) # Store Cluster information
         cluster_id += 1
-      idx = idx+1 if idx < len(alive_nodes)-1 else 0
-  
+        idx = idx+1 if idx < len(sorted_nodes)-1 else 0
+    else:
+      # TODO Add Reference
+      # Get top two cluster with highest energy and calculate their euclidean distance 
+      eligible_CHs = []
+      for cluster in clusters:
+        eligible_CHs += cluster.top_energy_nodes()[:2]
+      sort_fn = lambda x: x.energy_source.energy 
+      eligible_CHs.sort(key=sort_fn, reverse=True)
+      
     # ordinary network choose nearest cluster heads
     logging.info('MODIFIED_LEACH: ordinary nodes choose nearest nearest cluster head')
-    for node in alive_nodes:
-      if node in heads: # node is cluster head
-        continue
+    for node in alive_nodes: if node in heads: # node is cluster head continue 
       nearest_head = heads[0]
       cluster = clusters[0]
       # find the nearest cluster head
@@ -88,6 +104,8 @@ class MODIFIED_LEACH(RoutingProtocol):
   
       node.next_hop = nearest_head.id
       cluster.add_member(node)
+
+    logging.debug('MODIFIED_LEACH: new clusters--> %s' % clusters)
 
   def setup_phase(self, network, round_nb=None):
     """ Setup phase varies depending on number of rounds. For the first round the 

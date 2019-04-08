@@ -94,8 +94,7 @@ scenarios = [
 #              "cf.FITNESS_ALPHA=0.5",
 #              "cf.FITNESS_BETA=0.5",
 #              scenario4,
-#              scenario5,
-#              scenario6,
+#              scenario5, #              scenario6,
 #              "cf.FITNESS_ALPHA=0.75",
 #              "cf.FITNESS_BETA=0.25",
 #              scenario4,
@@ -151,7 +150,7 @@ BS_POS_Y = 125.0
 MSG_LENGTH = 4000 # bits
 HEADER_LENGTH = 150 # bits
 # initial energy at every node's battery
-INITIAL_ENERGY = 0.1 # Joules
+INITIAL_ENERGY = 0.5 # Joules
 
 
 ## Energy Configurations
@@ -170,6 +169,7 @@ THRESHOLD_DIST = math.sqrt(E_FS/E_MP) # meters
 
 ## Routing configurations:
 NB_CLUSTERS = 5
+CLUSTER_BASE_DIST = 0.765 * AREA_LENGTH * 0.5
 # FCM fuzzyness coeficient
 FUZZY_M = 2
 

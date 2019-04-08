@@ -13,6 +13,9 @@ class Cluster(object):
         self.members += members
 
     self.id = id
+
+  def __repr__(self):
+    return "Cluster %s with %s members" % (self.id, len(self.members))
   
   def __str__(self):
     return "Cluster %s with %s members" % (self.id, len(self.members))
@@ -31,7 +34,7 @@ class Cluster(object):
   def is_cluster_ineffective(self):
     """ Return whether 1/4 of cluster members are inactive and cluster should
     be reshuffled by base station"""
-    print('Cluster %s %s %s %s %s' % (self.id, len(self.members), len(self.get_alive_nodes()), len(self.members) * 0.75, self.head))
+    logging.debug('Cluster %s %s %s %s %s' % (self.id, len(self.members), len(self.get_alive_nodes()), len(self.members) * 0.75, self.head))
     return len(self.get_alive_nodes()) < len(self.members) * 0.75
 
   def _only_active_members(func):
@@ -83,4 +86,12 @@ class Cluster(object):
     """ Get average energy for current active nodes """
     nodes_energies =[ node.energy_source.energy for node in active_nodes ]
     return np.average(nodes_energies)
+  
+  @_only_active_members
+  def top_energy_nodes(self, active_nodes):
+    """ Return a sorted list of alive nodes based on energy """
+    sort_fn = lambda x: x.energy_source.energy 
+    return sorted([ node for node in active_nodes if \
+            node.energy_source.energy >= ave_energy ], key=sort_fn, reverse=True)
+
 
