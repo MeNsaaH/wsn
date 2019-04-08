@@ -32,7 +32,7 @@ class Network(list):
     self.perform_two_level_comm = 1
     self.round = 0
     self.centroids = []
-    self.routing_protocol = None
+    self.routing_protocol = None 
     self.sleep_scheduler_class = None
 
     self.initial_energy = self.get_remaining_energy()

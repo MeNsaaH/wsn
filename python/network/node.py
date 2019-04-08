@@ -17,6 +17,11 @@ class Node(object):
     self.network_handler = parent
 
     self.reactivate()
+    # Monitors rounds per node for cluster
+    self.rounds_not_being_CH = -1
+  
+  def __str__(self):
+    return "Node %s at (%s, %s)" % (self.id, self.pos_x, self.pos_y)
 
   def reactivate(self):
     """Reactivate nodes for next simulation."""
@@ -170,4 +175,24 @@ class Node(object):
     self.sleep_prob = 0.0
     self.time_of_death = self.network_handler.round
     self.network_handler.deaths_this_round += 1
+
+  def start_round_no_CH_counter(self):
+    if self.rounds_not_being_CH < 0:
+      self.rounds_not_being_CH = 0
+
+  def round_pass_no_CH(self):
+    if self.rounds_not_being_CH >= 0:
+      self.rounds_not_being_CH += 1
+
+  def reset_round_no_CH_counter(self):
+    self.rounds_not_being_CH = -1
+
+  @property
+  def is_eligible_cluster_head(self):
+    """ Monitor the rounds for which this node is a cluster head
+    if Node has not being cluster head for two rounds, then node is
+    eligible
+    """
+    return self.rounds_not_being_CH >= 2
+
 

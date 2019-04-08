@@ -36,6 +36,8 @@ scenario31 = ('FCM',   None,              'zero',  'BS at (125,125)')
 scenario32 = ('FCM',   None,              'zero',  'BS at (65,65)')
 scenario33 = ('FCM',   None,              'zero',  'BS at (0,0)')
 scenario34 = ('FCM',   None,              'zero',  'BS at (-65,-65)')
+# Modified Leach Algorithm
+scenario12 = ('MODIFIED_LEACH', None, 'zero', None)
 # list with all scenarios to simulate
 
 # example of configuration to get first part of results
@@ -68,11 +70,11 @@ scenarios = [
 #              scenario1,
 #              scenario2,
 #              scenario3,
-              scenario4,
+#              scenario4,
 #              "cf.FITNESS_ALPHA=0.34",
 #              "cf.FITNESS_BETA=0.33",
 #              "cf.FITNESS_GAMMA=0.33",
-              scenario6,
+#              scenario6,
 #              scenario6,
 #              #'cf.BS_POS_X=65.0',
 #              #'cf.BS_POS_Y=65.0',
@@ -83,6 +85,7 @@ scenarios = [
 #              #'cf.BS_POS_X=-65.0',
 #              #'cf.BS_POS_Y=-65.0',
 #              #scenario34,
+              scenario12,
               "save2csv_raw(traces)",
               "plot_traces(traces)",
             ]
@@ -117,13 +120,13 @@ scenarios = [
 #            ]
 
 ## tracer options
-TRACE_ENERGY         = 0
+TRACE_ENERGY         = 1
 TRACE_ALIVE_NODES    = 1
 TRACE_COVERAGE       = 1
-TRACE_LEARNING_CURVE = 0
+TRACE_LEARNING_CURVE = 1
 
 ## Runtime configuration
-MAX_ROUNDS = 15000
+MAX_ROUNDS = 5000
 # number of transmissions of sensed information to cluster heads or to
 # base station (per round)
 MAX_TX_PER_ROUND = 1
@@ -132,15 +135,15 @@ NOTIFY_POSITION = 0
 
 ## Network configurations:
 # number of nodes
-NB_NODES = 300
+NB_NODES = 100
 # node sensor range
 COVERAGE_RADIUS = 15 # meters 
 # node transmission range
 TX_RANGE = 30 # meters
 BSID = -1
 # area definition
-AREA_WIDTH = 250.0
-AREA_LENGTH = 250.0
+AREA_WIDTH = 100.0
+AREA_LENGTH = 100.0
 # base station position
 BS_POS_X = 125.0
 BS_POS_Y = 125.0
@@ -148,7 +151,7 @@ BS_POS_Y = 125.0
 MSG_LENGTH = 4000 # bits
 HEADER_LENGTH = 150 # bits
 # initial energy at every node's battery
-INITIAL_ENERGY = 2 # Joules
+INITIAL_ENERGY = 0.1 # Joules
 
 
 ## Energy Configurations
