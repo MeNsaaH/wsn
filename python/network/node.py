@@ -20,8 +20,11 @@ class Node(object):
     # Monitors rounds per node for cluster
     self.rounds_not_being_CH = -1
   
+  def __repr__(self):
+    return "<Node %s energy %s>" % (self.id, float(self.energy_source.energy))
+
   def __str__(self):
-    return "Node %s at (%s, %s)" % (self.id, self.pos_x, self.pos_y)
+    return "Node %s at (%s, %s) with energy %s" % (self.id, self.pos_x, self.pos_y, self.energy_source.energy)
 
   def reactivate(self):
     """Reactivate nodes for next simulation."""
@@ -187,12 +190,11 @@ class Node(object):
   def reset_round_no_CH_counter(self):
     self.rounds_not_being_CH = -1
 
-  @property
   def is_eligible_cluster_head(self):
     """ Monitor the rounds for which this node is a cluster head
     if Node has not being cluster head for two rounds, then node is
     eligible
     """
-    return self.rounds_not_being_CH >= 2
+    return self.rounds_not_being_CH >= 2 or self.rounds_not_being_CH < 0
 
 

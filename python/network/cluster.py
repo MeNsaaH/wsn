@@ -22,7 +22,7 @@ class Cluster(object):
 
   def get_alive_members(self):
     """Return nodes that have positive remaining energy and not cluster head"""
-    return [node for node in self.members if node.alive and not node.is_head]
+    return [node for node in self.members if node.alive and not node.is_head()]
 
   def get_alive_nodes(self):
     """Return nodes that have positive remaining energy."""
@@ -31,7 +31,7 @@ class Cluster(object):
   def is_cluster_ineffective(self):
     """ Return whether 1/4 of cluster members are inactive and cluster should
     be reshuffled by base station"""
-    print('Cluster %s %s %s %s' % (self.id, len(self.members), len(self.get_alive_nodes()), len(self.members) * 0.75))
+    print('Cluster %s %s %s %s %s' % (self.id, len(self.members), len(self.get_alive_nodes()), len(self.members) * 0.75, self.head))
     return len(self.get_alive_nodes()) < len(self.members) * 0.75
 
   def _only_active_members(func):
@@ -51,17 +51,16 @@ class Cluster(object):
   @_only_active_members
   def _get_CH(self, active_nodes):
     """ Gets new cluster head based on Modified LEACH algorithm """
-    ave_energy = self.get_average_energy()
-    nodes_energies =[ node.energy_source.energy for node in active_nodes ]
+    nodes_energies = [ node.energy_source.energy for node in active_nodes ]
+    ave_energy = np.average(nodes_energies)
     # Nodes are eligible for CH iff remaining energy is greater than average 
     # total energy of active nodes
-    sort_node_by_energy = lambda x,y: x.energy_source.energy > y.energy_source.energy
+    sort_fn = lambda x: x.energy_source.energy 
     eligible_nodes = sorted([ node for node in active_nodes if \
-            node.energy_source.energy >= ave_energy ], sort_node_by_energy)
-    print([node.energy for node in eligible_nodes])
+            node.energy_source.energy >= ave_energy ], key=sort_fn, reverse=True)
 
     for node in eligible_nodes:
-      if node.is_eligible_cluster_head:
+      if node.is_eligible_cluster_head():
         prev_head = self.head
         # Start tracking number of rounds for which previous head is not head
         prev_head.start_round_no_CH_counter()
